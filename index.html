@@ -539,17 +539,24 @@
 
     async function loadVariant(num) {
       activeVariant = num;
-      statusBadge.textContent = translations[currentLang].loading;
+      const t = translations[currentLang];
+      statusBadge.textContent = t.loading;
+
+      // Clear any existing error messages on screen
+      const existingError = document.getElementById('on-screen-error');
+      if (existingError) existingError.remove();
 
       try {
-        // Dynamic script loading
+        // Use strictly relative path with ./ as requested
         const script = document.createElement('script');
-        script.src = `questions/${currentLang}/variant${num}.js?t=${Date.now()}`;
-        document.head.appendChild(script);
+        script.src = `./questions/${currentLang}/variant${num}.js?t=${Date.now()}`;
 
         script.onload = () => {
           questions = window.__QUIZ_VARIANTS[`variant${num}`];
-          if (!questions || !questions.length) throw new Error('No questions found');
+          if (!questions || !questions.length) {
+            showError('Ошибка: данные варианта пусты или повреждены.');
+            return;
+          }
 
           questions = shuffle(questions.map(q => ({
             ...q,
@@ -560,13 +567,43 @@
         };
 
         script.onerror = () => {
-          alert('Failed to load variant file. Make sure it exists in /questions/ folder.');
-          showScreen('menu');
+          showError('Ошибка: файл варианта не найден. Проверьте папку на GitHub');
         };
+
+        document.head.appendChild(script);
       } catch (e) {
         console.error(e);
-        showScreen('menu');
+        showError('Ошибка при загрузке: ' + e.message);
       }
+    }
+
+    function showError(msg) {
+      const container = document.querySelector('.app-container');
+      const t = translations[currentLang];
+
+      // Hide all screens
+      Object.keys(screens).forEach(key => screens[key].classList.add('hidden'));
+      progressUI.classList.add('hidden');
+      statusBadge.textContent = 'Error';
+
+      const errorDiv = document.createElement('div');
+      errorDiv.id = 'on-screen-error';
+      errorDiv.className = 'card';
+      errorDiv.style.textAlign = 'center';
+      errorDiv.style.padding = '40px 20px';
+      errorDiv.style.borderColor = 'var(--error)';
+      errorDiv.style.background = 'rgba(239, 68, 68, 0.05)';
+
+      errorDiv.innerHTML = `
+        <h3 style="color: var(--error); margin-bottom: 24px; font-size: 18px; line-height: 1.5;">
+          ${msg}
+        </h3>
+        <button class="btn-main btn-secondary" style="margin: 0 auto;" onclick="location.reload()">
+          ${t.backBtn}
+        </button>
+      `;
+
+      container.appendChild(errorDiv);
     }
 
     function startQuiz() {
