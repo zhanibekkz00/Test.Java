@@ -356,11 +356,23 @@
       </div>
     </div>
 
+    <!-- Language Selection Screen -->
+    <div id="langScreen">
+      <div class="card" style="text-align: center;">
+        <h2 id="langTitle" style="margin-bottom: 24px;">Выберите язык / Тілді таңдаңыз</h2>
+        <div style="display: flex; gap: 16px; justify-content: center;">
+          <button class="btn-main btn-next" onclick="selectLanguage('ru')">Русский</button>
+          <button class="btn-main btn-next" onclick="selectLanguage('kz')">Қазақша</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Menu Screen -->
-    <div id="menuScreen">
+    <div id="menuScreen" class="hidden">
       <div class="card">
-        <h2 style="margin-bottom: 8px;">Select Variant</h2>
-        <p style="color: var(--text-muted); font-size: 14px;">Choose a test set to begin. Each variant contains unique
+        <h2 id="menuTitle" style="margin-bottom: 8px;">Select Variant</h2>
+        <p id="menuDesc" style="color: var(--text-muted); font-size: 14px;">Choose a test set to begin. Each variant
+          contains unique
           questions.</p>
         <div id="variantGrid" class="variant-grid"></div>
       </div>
@@ -397,16 +409,63 @@
   </div>
 
   <script>
-    const VARIANT_COUNT = 9;
+    const VARIANT_CONFIG = {
+      ru: 9,
+      kz: 9
+    };
+
+    const translations = {
+      ru: {
+        header: "Модульная система тестирования",
+        statusMenu: "Главное меню",
+        statusResults: "Результаты",
+        menuTitle: "Выберите вариант",
+        menuDesc: "Выберите набор тестов, чтобы начать...",
+        qNumber: (curr, total) => `Вопрос ${curr} из ${total}`,
+        scoreText: (s) => `Правильно: ${s}`,
+        backBtn: "← Вернуться в меню",
+        nextBtn: "Следующий вопрос →",
+        viewResults: "Посмотреть результаты",
+        testCompleted: "Тест завершен!",
+        tryAgain: "Попробовать снова",
+        reviewMistakes: "Работа над ошибками",
+        yourChoice: "Ваш выбор",
+        correctAnswer: "Правильный ответ",
+        variantLabel: (i) => `Вариант №${i}`,
+        loading: "Загрузка..."
+      },
+      kz: {
+        header: "Модульдік тестілеу жүйесі",
+        statusMenu: "Негізгі мәзір",
+        statusResults: "Нәтижелер",
+        menuTitle: "Нұсқаны таңдаңыз",
+        menuDesc: "Бастау үшін тест жинағын таңдаңыз...",
+        qNumber: (curr, total) => `Сұрақ ${curr} / ${total}`,
+        scoreText: (s) => `Дұрыс: ${s}`,
+        backBtn: "← Мәзірге қайту",
+        nextBtn: "Келесі сұрақ →",
+        viewResults: "Нәтижені көру",
+        testCompleted: "Тест аяқталды!",
+        tryAgain: "Қайтадан байқап көру",
+        reviewMistakes: "Қатемен жұмыс",
+        yourChoice: "Сіздің таңдауыңыз",
+        correctAnswer: "Дұрыс жауап",
+        variantLabel: (i) => `Вариант №${i}`,
+        loading: "Жүктелуде..."
+      }
+    };
+
     let questions = [];
     let currentIdx = 0;
     let score = 0;
     let answered = false;
     let activeVariant = null;
     let userAnswers = [];
+    let currentLang = 'ru';
 
     // Elements
     const screens = {
+      lang: document.getElementById('langScreen'),
       menu: document.getElementById('menuScreen'),
       quiz: document.getElementById('quizScreen'),
       result: document.getElementById('resultScreen')
@@ -426,18 +485,50 @@
     const errorBreakdown = document.getElementById('errorBreakdown');
     const errorList = document.getElementById('errorList');
 
+    function selectLanguage(lang) {
+      currentLang = lang;
+      updateUILanguage();
+      initVariantGrid();
+      showScreen('menu');
+    }
+
+    function updateUILanguage() {
+      const t = translations[currentLang];
+      document.querySelector('.title-group h1').textContent = t.header;
+      document.getElementById('menuTitle').textContent = t.menuTitle;
+      document.getElementById('menuDesc').textContent = t.menuDesc;
+      backBtn.textContent = t.backBtn;
+      restartBtn.textContent = t.tryAgain;
+      document.querySelector('#resultScreen h2').textContent = t.testCompleted;
+      document.querySelector('#errorBreakdown h3').textContent = t.reviewMistakes;
+    }
+
+    function initVariantGrid() {
+      variantGrid.innerHTML = '';
+      const count = VARIANT_CONFIG[currentLang];
+      const t = translations[currentLang];
+      for (let i = 1; i <= count; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'btn-variant';
+        btn.textContent = t.variantLabel(i);
+        btn.onclick = () => loadVariant(i);
+        variantGrid.appendChild(btn);
+      }
+    }
+
     function showScreen(name) {
       Object.keys(screens).forEach(key => screens[key].classList.add('hidden'));
       screens[name].classList.remove('hidden');
 
+      const t = translations[currentLang];
       if (name === 'menu') {
-        statusBadge.textContent = 'Main Menu';
+        statusBadge.textContent = t.statusMenu;
         progressUI.classList.add('hidden');
       } else if (name === 'quiz') {
-        statusBadge.textContent = `Variant ${activeVariant}`;
+        statusBadge.textContent = `${t.variantLabel(activeVariant)}`;
         progressUI.classList.remove('hidden');
-      } else {
-        statusBadge.textContent = 'Results';
+      } else if (name === 'result') {
+        statusBadge.textContent = t.statusResults;
         progressUI.classList.add('hidden');
       }
     }
@@ -448,12 +539,12 @@
 
     async function loadVariant(num) {
       activeVariant = num;
-      statusBadge.textContent = 'Loading...';
+      statusBadge.textContent = translations[currentLang].loading;
 
       try {
         // Dynamic script loading
         const script = document.createElement('script');
-        script.src = `questions/variant${num}.js?t=${Date.now()}`;
+        script.src = `questions/${currentLang}/variant${num}.js?t=${Date.now()}`;
         document.head.appendChild(script);
 
         script.onload = () => {
@@ -496,9 +587,10 @@
 
       // Update Progress
       const progress = ((currentIdx + 1) / questions.length) * 100;
+      const t = translations[currentLang];
       progressBar.style.width = `${progress}%`;
-      qNumberLabel.textContent = `Question ${currentIdx + 1}/${questions.length}`;
-      scoreLabel.textContent = `Correct: ${score}`;
+      qNumberLabel.textContent = t.qNumber(currentIdx + 1, questions.length);
+      scoreLabel.textContent = t.scoreText(score);
 
       q.options.forEach((opt, i) => {
         const btn = document.createElement('button');
@@ -539,9 +631,9 @@
         });
       }
 
-      scoreLabel.textContent = `Correct: ${score}`;
+      scoreLabel.textContent = translations[currentLang].scoreText(score);
       nextBtn.classList.remove('hidden');
-      nextBtn.textContent = currentIdx === questions.length - 1 ? 'View Results' : 'Next Question →';
+      nextBtn.textContent = currentIdx === questions.length - 1 ? translations[currentLang].viewResults : translations[currentLang].nextBtn;
     }
 
     function nextQuestion() {
@@ -559,6 +651,7 @@
 
       // Render Mistakes
       const mistakes = userAnswers.filter(a => !a.isCorrect);
+      const t = translations[currentLang];
       if (mistakes.length > 0) {
         errorBreakdown.classList.remove('hidden');
         errorList.innerHTML = mistakes.map(m => `
@@ -566,11 +659,11 @@
             <div class="error-question">${m.question}</div>
             <div class="choice-row">
               <div class="choice-box user-wrong">
-                <span class="choice-label">Your Choice:</span>
+                <span class="choice-label">${t.yourChoice}:</span>
                 <span>${m.selected}</span>
               </div>
               <div class="choice-box correct-actual">
-                <span class="choice-label">Correct:</span>
+                <span class="choice-label">${t.correctAnswer}:</span>
                 <span>${m.correct}</span>
               </div>
             </div>
@@ -581,21 +674,13 @@
       }
     }
 
-    // Init Menu Buttons
-    for (let i = 1; i <= VARIANT_COUNT; i++) {
-      const btn = document.createElement('button');
-      btn.className = 'btn-variant';
-      btn.textContent = `Вариант №${i}`;
-      btn.onclick = () => loadVariant(i);
-      variantGrid.appendChild(btn);
-    }
 
     // Event Listeners
     nextBtn.onclick = nextQuestion;
     backBtn.onclick = () => showScreen('menu');
     restartBtn.onclick = startQuiz;
 
-    showScreen('menu');
+    showScreen('lang');
   </script>
 </body>
 
