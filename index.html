@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Premium Test Platform</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+
+    :root {
+      --bg: #030712;
+      --card-bg: rgba(17, 24, 39, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --accent: #3b82f6;
+      --accent-glow: rgba(59, 130, 246, 0.5);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --success: #10b981;
+      --error: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      background-image:
+        radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.15) 0%, transparent 40%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 800px;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .title-group h1 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(to right, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .status-badge {
+      font-size: 12px;
+      padding: 4px 12px;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 100px;
+      color: #93c5fd;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .progress-section {
+      margin-bottom: 24px;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .progress-bar-bg {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      transition: transform 0.3s ease;
+    }
+
+    .variant-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn-variant {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      color: var(--text);
+      padding: 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .btn-variant:hover {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .question-text {
+      font-size: 20px;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+
+    .options-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .option-btn {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 16px;
+    }
+
+    .option-letter {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateX(4px);
+    }
+
+    .option-btn.correct {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: var(--success);
+    }
+
+    .option-btn.correct .option-letter {
+      background: var(--success);
+      color: white;
+    }
+
+    .option-btn.wrong {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: var(--error);
+    }
+
+    .option-btn.wrong .option-letter {
+      background: var(--error);
+      color: white;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    .btn-main {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-next {
+      background: var(--accent);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+    }
+
+    .btn-next:hover {
+      background: #2563eb;
+      transform: scale(1.02);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--glass-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Error Breakdown Styles */
+    .error-breakdown {
+      margin-top: 32px;
+      text-align: left;
+      border-top: 1px solid var(--glass-border);
+      padding-top: 24px;
+    }
+
+    .error-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .error-question {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    .choice-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .choice-box {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .choice-box.user-wrong {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--error);
+      color: #fca5a5;
+    }
+
+    .choice-box.correct-actual {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--success);
+      color: #a7f3d0;
+    }
+
+    .choice-label {
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 640px) {
+      .app-container {
+        padding: 20px;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+      }
+
+      .footer {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .btn-main {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-container">
+    <div class="header">
+      <div class="title-group">
+        <h1>Modular Test System</h1>
+      </div>
+      <div id="statusBadge" class="status-badge">Main Menu</div>
+    </div>
+
+    <!-- Progress UI -->
+    <div id="progressUI" class="progress-section hidden">
+      <div class="progress-info">
+        <span id="qNumber">Question 1/20</span>
+        <span id="scoreText">Correct: 0</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div id="progressBar" class="progress-bar-fill"></div>
+      </div>
+    </div>
+
+    <!-- Menu Screen -->
+    <div id="menuScreen">
+      <div class="card">
+        <h2 style="margin-bottom: 8px;">Select Variant</h2>
+        <p style="color: var(--text-muted); font-size: 14px;">Choose a test set to begin. Each variant contains unique
+          questions.</p>
+        <div id="variantGrid" class="variant-grid"></div>
+      </div>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="quizScreen" class="hidden">
+      <div class="card">
+        <div id="questionDisplay" class="question-text">Loading question...</div>
+      </div>
+      <div id="optionsDisplay" class="options-list"></div>
+
+      <div class="footer">
+        <button id="backBtn" class="btn-main btn-secondary">← Back to Menu</button>
+        <button id="nextBtn" class="btn-main btn-next hidden">Next Question →</button>
+      </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="resultScreen" class="hidden">
+      <div class="card" style="text-align: center; padding: 48px 24px;">
+        <h2 style="font-size: 32px; margin-bottom: 16px;">Test Completed!</h2>
+        <div id="finalScore" style="font-size: 24px; color: var(--accent); font-weight: 700;"></div>
+        <p style="margin-top: 16px; color: var(--text-muted);">You've successfully finished this variant.</p>
+
+        <div id="errorBreakdown" class="error-breakdown hidden">
+          <h3 style="margin-bottom: 20px;">Review Mistakes</h3>
+          <div id="errorList"></div>
+        </div>
+
+        <button id="restartBtn" class="btn-main btn-next" style="margin: 32px auto 0;">Try Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const VARIANT_COUNT = 9;
+    let questions = [];
+    let currentIdx = 0;
+    let score = 0;
+    let answered = false;
+    let activeVariant = null;
+    let userAnswers = [];
+
+    // Elements
+    const screens = {
+      menu: document.getElementById('menuScreen'),
+      quiz: document.getElementById('quizScreen'),
+      result: document.getElementById('resultScreen')
+    };
+    const statusBadge = document.getElementById('statusBadge');
+    const progressUI = document.getElementById('progressUI');
+    const progressBar = document.getElementById('progressBar');
+    const qNumberLabel = document.getElementById('qNumber');
+    const scoreLabel = document.getElementById('scoreText');
+    const variantGrid = document.getElementById('variantGrid');
+    const questionDisplay = document.getElementById('questionDisplay');
+    const optionsDisplay = document.getElementById('optionsDisplay');
+    const nextBtn = document.getElementById('nextBtn');
+    const backBtn = document.getElementById('backBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const finalScoreDisplay = document.getElementById('finalScore');
+    const errorBreakdown = document.getElementById('errorBreakdown');
+    const errorList = document.getElementById('errorList');
+
+    function showScreen(name) {
+      Object.keys(screens).forEach(key => screens[key].classList.add('hidden'));
+      screens[name].classList.remove('hidden');
+
+      if (name === 'menu') {
+        statusBadge.textContent = 'Main Menu';
+        progressUI.classList.add('hidden');
+      } else if (name === 'quiz') {
+        statusBadge.textContent = `Variant ${activeVariant}`;
+        progressUI.classList.remove('hidden');
+      } else {
+        statusBadge.textContent = 'Results';
+        progressUI.classList.add('hidden');
+      }
+    }
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    async function loadVariant(num) {
+      activeVariant = num;
+      statusBadge.textContent = 'Loading...';
+
+      try {
+        // Dynamic script loading
+        const script = document.createElement('script');
+        script.src = `questions/variant${num}.js?t=${Date.now()}`;
+        document.head.appendChild(script);
+
+        script.onload = () => {
+          questions = window.__QUIZ_VARIANTS[`variant${num}`];
+          if (!questions || !questions.length) throw new Error('No questions found');
+
+          questions = shuffle(questions.map(q => ({
+            ...q,
+            options: shuffle([...q.options])
+          })));
+
+          startQuiz();
+        };
+
+        script.onerror = () => {
+          alert('Failed to load variant file. Make sure it exists in /questions/ folder.');
+          showScreen('menu');
+        };
+      } catch (e) {
+        console.error(e);
+        showScreen('menu');
+      }
+    }
+
+    function startQuiz() {
+      currentIdx = 0;
+      score = 0;
+      userAnswers = [];
+      showScreen('quiz');
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      answered = false;
+      nextBtn.classList.add('hidden');
+      const q = questions[currentIdx];
+
+      questionDisplay.textContent = q.text;
+      optionsDisplay.innerHTML = '';
+
+      // Update Progress
+      const progress = ((currentIdx + 1) / questions.length) * 100;
+      progressBar.style.width = `${progress}%`;
+      qNumberLabel.textContent = `Question ${currentIdx + 1}/${questions.length}`;
+      scoreLabel.textContent = `Correct: ${score}`;
+
+      q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `
+          <div class="option-letter">${String.fromCharCode(65 + i)}</div>
+          <div class="option-text">${opt}</div>
+        `;
+        btn.onclick = () => selectOption(btn, opt);
+        optionsDisplay.appendChild(btn);
+      });
+    }
+
+    function selectOption(btn, selected) {
+      if (answered) return;
+      answered = true;
+
+      const q = questions[currentIdx];
+      const isCorrect = selected === q.correctAnswer;
+
+      userAnswers.push({
+        question: q.text,
+        selected: selected,
+        correct: q.correctAnswer,
+        isCorrect: isCorrect
+      });
+
+      if (isCorrect) {
+        score++;
+        btn.classList.add('correct');
+      } else {
+        btn.classList.add('wrong');
+        // Show correct answer
+        Array.from(optionsDisplay.children).forEach(child => {
+          if (child.querySelector('.option-text').textContent === q.correctAnswer) {
+            child.classList.add('correct');
+          }
+        });
+      }
+
+      scoreLabel.textContent = `Correct: ${score}`;
+      nextBtn.classList.remove('hidden');
+      nextBtn.textContent = currentIdx === questions.length - 1 ? 'View Results' : 'Next Question →';
+    }
+
+    function nextQuestion() {
+      if (currentIdx < questions.length - 1) {
+        currentIdx++;
+        renderQuestion();
+      } else {
+        finishQuiz();
+      }
+    }
+
+    function finishQuiz() {
+      showScreen('result');
+      finalScoreDisplay.textContent = `${score} / ${questions.length} (${Math.round((score / questions.length) * 100)}%)`;
+
+      // Render Mistakes
+      const mistakes = userAnswers.filter(a => !a.isCorrect);
+      if (mistakes.length > 0) {
+        errorBreakdown.classList.remove('hidden');
+        errorList.innerHTML = mistakes.map(m => `
+          <div class="error-item">
+            <div class="error-question">${m.question}</div>
+            <div class="choice-row">
+              <div class="choice-box user-wrong">
+                <span class="choice-label">Your Choice:</span>
+                <span>${m.selected}</span>
+              </div>
+              <div class="choice-box correct-actual">
+                <span class="choice-label">Correct:</span>
+                <span>${m.correct}</span>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        errorBreakdown.classList.add('hidden');
+      }
+    }
+
+    // Init Menu Buttons
+    for (let i = 1; i <= VARIANT_COUNT; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'btn-variant';
+      btn.textContent = `Вариант №${i}`;
+      btn.onclick = () => loadVariant(i);
+      variantGrid.appendChild(btn);
+    }
+
+    // Event Listeners
+    nextBtn.onclick = nextQuestion;
+    backBtn.onclick = () => showScreen('menu');
+    restartBtn.onclick = startQuiz;
+
+    showScreen('menu');
+  </script>
+</body>
+
+</html>

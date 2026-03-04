@@ -1,0 +1,8 @@
+.vscode/
+desktop.ini
+~$*.docx
+*.docx
+.gemini/
+node_modules/
+dist/
+build/
